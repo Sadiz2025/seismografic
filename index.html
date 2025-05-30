@@ -15,7 +15,7 @@
     <p id="status" class="mb-2">Esperando permiso...</p>
     <button id="requestPermission" class="bg-blue-500 text-white px-4 py-2 rounded mb-4">Solicitar Permiso</button>
     <div id="intensityIndicator" class="w-full max-w-md p-4 rounded text-center text-white">
-        Intensidad: <span id="intensity">N/A</span>
+        Percepción: <span id="intensity">N/A</span>
     </div>
     <p id="description" class="text-center mb-4">Descripción: N/A</p>
     <p id="acceleration" class="mb-4">Aceleración: 0 m/s²</p>
@@ -34,15 +34,17 @@
         let dataPoints = [];
         let lastX = 0;
 
+        // Escala de Mercalli ajustada con percepciones
         const mercalliScale = [
-            { intensity: 'I', min: 0, max: 0.017, color: '#00FF00', description: 'No sentido' },
-            { intensity: 'II-III', min: 0.017, max: 0.14, color: '#ADFF2F', description: 'Ligero, sentido por pocos' },
-            { intensity: 'IV-V', min: 0.14, max: 0.39, color: '#FFFF00', description: 'Moderado, objetos ligeros se mueven' },
-            { intensity: 'VI-VII', min: 0.39, max: 1.8, color: '#FFA500', description: 'Fuerte, daños leves en edificios' },
-            { intensity: 'VIII-IX', min: 1.8, max: 3.4, color: '#FF4500', description: 'Muy fuerte, daños considerables' },
-            { intensity: 'X+', min: 3.4, max: Infinity, color: '#FF0000', description: 'Extremo, destrucción total' }
+            { perception: 'No sentido', min: 0, max: 0.017, color: '#00FF00', description: 'No se percibe movimiento.' },
+            { perception: 'Ligero', min: 0.017, max: 0.14, color: '#ADFF2F', description: 'Sentido por pocas personas en reposo.' },
+            { perception: 'Moderado', min: 0.14, max: 0.39, color: '#FFFF00', description: 'Objetos ligeros se mueven ligeramente.' },
+            { perception: 'Fuerte', min: 0.39, max: 1.8, color: '#FFA500', description: 'Daños leves en edificios.' },
+            { perception: 'Muy fuerte', min: 1.8, max: 3.4, color: '#FF4500', description: 'Daños considerables en estructuras.' },
+            { perception: 'Extremo', min: 3.4, max: Infinity, color: '#FF0000', description: 'Destrucción total posible.' }
         ];
 
+        // Solicitar permiso para el acelerómetro
         requestButton.addEventListener('click', async () => {
             if (typeof DeviceMotionEvent.requestPermission === 'function') {
                 try {
@@ -67,15 +69,20 @@
         function handleMotion(event) {
             const acc = event.accelerationIncludingGravity;
             if (acc && acc.x !== null && acc.y !== null && acc.z !== null) {
-                const magnitude = Math.sqrt(acc.x ** 2 + acc.y ** 2 + acc.z ** 2);
-                accelerationText.textContent = `Aceleración: ${magnitude.toFixed(2)} m/s²`;
+                // Calcular magnitud total incluyendo gravedad
+                const totalMagnitude = Math.sqrt(acc.x ** 2 + acc.y ** 2 + acc.z ** 2);
+                // Aproximar la aceleración neta restando la gravedad (9.8 m/s² como referencia)
+                const netMagnitude = Math.max(0, totalMagnitude - 9.8); // Evitar valores negativos
+                accelerationText.textContent = `Aceleración: ${netMagnitude.toFixed(2)} m/s²`;
 
-                const level = mercalliScale.find(scale => magnitude >= scale.min && magnitude < scale.max);
-                intensityText.textContent = level.intensity;
-                descriptionText.textContent = `Descripción: ${level.description}`;
+                // Determinar percepción basada en la aceleración neta
+                const level = mercalliScale.find(scale => netMagnitude >= scale.min && netMagnitude < scale.max) || mercalliScale[0];
+                intensityText.textContent = level.perception;
+                descriptionText.textContent = level.description;
                 intensityIndicator.style.backgroundColor = level.color;
 
-                dataPoints.push(magnitude);
+                // Agregar datos para el sismógrafo
+                dataPoints.push(netMagnitude);
                 if (dataPoints.length > canvas.width / 2) {
                     dataPoints.shift();
                 }
@@ -89,16 +96,25 @@
             ctx.strokeStyle = 'black';
             ctx.lineWidth = 2;
 
-            const maxAcc = 10;
+            const maxAcc = 5; // Ajustar escala máxima para mejor visualización
             dataPoints.forEach((value, index) => {
                 const x = canvas.width - dataPoints.length * 2 + index * 2;
-                const y = canvas.height / 2 - (value / maxAcc) * (canvas.height / 2);
+                // Centrar la línea base en el medio del canvas y escalar adecuadamente
+                const y = canvas.height / 2 - (value / maxAcc) * (canvas.height / 4); // Usar 1/4 del alto para amplitud
                 if (index === 0) ctx.moveTo(x, y);
                 else ctx.lineTo(x, y);
             });
             ctx.stroke();
+
+            // Dibujar línea base centrada
+            ctx.beginPath();
+            ctx.moveTo(0, canvas.height / 2);
+            ctx.lineTo(canvas.width, canvas.height / 2);
+            ctx.strokeStyle = 'gray';
+            ctx.stroke();
         }
 
+        // Dibujar línea base inicial
         ctx.beginPath();
         ctx.moveTo(0, canvas.height / 2);
         ctx.lineTo(canvas.width, canvas.height / 2);
