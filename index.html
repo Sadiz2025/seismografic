@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Teledansk - Simulador de Consumo</title>
+    <title>My Liberty App - Simulador de Consumo</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .progress-ring__circle {
-            transform: rotate(-90deg);
             transform-origin: center;
+            transform: rotate(180deg); /* Inicia en 180 grados (abajo) */
         }
         .progress-ring__circle-bg {
             fill: none;
@@ -16,19 +16,22 @@
         }
         .progress-ring__circle-fg {
             fill: none;
-            stroke: #22c55e;
-            transition: stroke-dasharray 0.3s;
+            stroke-width: 8;
+            transition: stroke 0.3s;
         }
         .data-counter {
-            transition: color 0.5s;
+            color: #000; /* Texto siempre negro */
         }
     </style>
 </head>
-<body class="bg-gradient-to-b from-teal-600 to-teal-200 min-h-screen flex items-center justify-center p-4">
+<body class="bg-gradient-to-b from-blue-600 to-blue-300 min-h-screen flex items-center justify-center p-4">
     <div class="bg-white rounded-lg shadow-lg w-full max-w-md p-6">
         <!-- Encabezado -->
         <div class="flex items-center justify-between mb-4">
-            <h1 class="text-2xl font-bold text-teal-700">Teledansk</h1>
+            <div class="flex items-center">
+                <img src="https://via.placeholder.com/30" alt="Liberty Logo" class="mr-2">
+                <h1 class="text-2xl font-bold text-white">Liberty</h1>
+            </div>
             <div class="text-sm text-gray-600">
                 <span>2:08</span>
                 <span class="ml-2">📶</span>
@@ -36,51 +39,87 @@
             </div>
         </div>
 
-        <!-- Información de la eSIM -->
-        <div class="mb-4">
-            <p class="text-gray-600">NÚMERO ICCID: <span class="font-medium">8910300000002985970</span></p>
-            <p class="text-gray-600">COBERTURA: Dinamarca</p>
-            <button class="text-teal-600 hover:underline mt-2">MOSTRAR MÁS</button>
+        <!-- Imagen y texto de bienvenida -->
+        <div class="relative mb-6">
+            <img src="https://via.placeholder.com/200x300" alt="Persona con teléfono" class="w-full h-auto rounded-lg object-cover">
+            <div class="absolute top-0 left-0 w-full h-full bg-blue-600 bg-opacity-50 flex items-center justify-center">
+                <h2 class="text-2xl font-bold text-white">Bienvenidos My Liberty App</h2>
+            </div>
+            <div class="absolute bottom-4 right-4 bg-white bg-opacity-80 p-2 rounded-lg">
+                <p class="text-sm text-blue-800">Gestiona tus servicios de forma rápida y sencilla en un único lugar</p>
+            </div>
         </div>
 
-        <!-- Advertencia -->
-        <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-4 rounded" role="alert">
-            <p class="font-bold">¡ADVERTENCIA!</p>
-            <p>Las eSIM solo pueden instalarse una vez. Si eliminas la eSIM de tu dispositivo, no podrás instalarla de nuevo.</p>
+        <!-- Saludo personal -->
+        <div class="bg-gray-100 p-4 rounded mb-4 flex justify-between items-center">
+            <h3 class="text-lg font-semibold text-blue-700">Hola, Mariana 👋</h3>
+        </div>
+
+        <!-- Detalles de planes -->
+        <div class="grid grid-cols-2 gap-4 mb-4">
+            <div class="bg-blue-100 p-4 rounded-lg">
+                <p class="text-sm text-blue-700">Prepago</p>
+                <p class="text-lg font-medium">(123) 456-7890</p>
+                <p class="text-sm text-blue-700">Plan expira 1/8/25</p>
+                <p class="text-sm text-blue-700">Available balance <span class="font-bold">$40.00</span> <span class="text-blue-500">></span></p>
+            </div>
+            <div class="bg-blue-100 p-4 rounded-lg">
+                <p class="text-sm text-blue-700">Casa plan</p>
+                <p class="text-lg font-medium">12</p>
+                <p class="text-sm text-blue-700">Balance de 1/8/25</p>
+            </div>
+        </div>
+
+        <!-- Opciones rápidas -->
+        <div class="grid grid-cols-4 gap-4 mb-4">
+            <div class="text-center">
+                <img src="https://via.placeholder.com/30" alt="Link account" class="mx-auto mb-2">
+                <p class="text-sm text-blue-700">Link account</p>
+            </div>
+            <div class="text-center">
+                <img src="https://via.placeholder.com/30" alt="Pagar cuenta" class="mx-auto mb-2">
+                <p class="text-sm text-blue-700">Pagar cuenta</p>
+            </div>
+            <div class="text-center">
+                <img src="https://via.placeholder.com/30" alt="Recarga prepago" class="mx-auto mb-2">
+                <p class="text-sm text-blue-700">Recarga prepago</p>
+            </div>
+            <div class="text-center">
+                <img src="https://via.placeholder.com/30" alt="Cambiar idioma" class="mx-auto mb-2">
+                <p class="text-sm text-blue-700">Cambiar idioma</p>
+            </div>
         </div>
 
         <!-- Contador de Datos Restantes -->
         <div class="bg-gray-100 p-4 rounded mb-4 text-center">
-            <h2 class="text-lg font-semibold text-teal-700 mb-2">DATOS RESTANTES</h2>
-            <div class="relative w-24 h-24 mx-auto mb-4">
-                <svg class="progress-ring__circle-bg" width="96" height="96">
-                    <circle cx="48" cy="48" r="42" stroke-width="8"/>
+            <h2 class="text-lg font-semibold text-blue-700 mb-2">DATOS RESTANTES</h2>
+            <div class="relative w-32 h-32 mx-auto mb-4">
+                <svg class="progress-ring__circle-bg" width="128" height="128">
+                    <circle cx="64" cy="64" r="58" stroke-width="8"/>
                 </svg>
-                <svg class="progress-ring__circle-fg absolute top-0 left-0" width="96" height="96">
-                    <circle cx="48" cy="48" r="42" stroke-width="8"/>
+                <svg class="progress-ring__circle-fg absolute top-0 left-0" width="128" height="128">
+                    <circle cx="64" cy="64" r="58" stroke-width="8"/>
                 </svg>
-                <span id="progress-value" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-lg font-bold data-counter">3.00 GB</span>
+                <span id="progress-value" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-xl font-bold data-counter">3.00 GB</span>
             </div>
         </div>
 
         <!-- Detalles de Consumo -->
         <div class="bg-white p-4 rounded shadow-inner mb-4">
-            <h2 class="text-lg font-semibold text-teal-700 mb-2">CONSUMO</h2>
+            <h2 class="text-lg font-semibold text-blue-700 mb-2">CONSUMO</h2>
             <div class="text-center">
                 <p class="text-gray-600">DATOS USADOS</p>
-                <p id="data-used" class="text-lg font-medium text-teal-700">0 MB</p>
+                <p id="data-used" class="text-lg font-medium text-blue-700">0 MB</p>
                 <p class="text-gray-600">DATOS TOTALES</p>
-                <p class="text-lg font-medium text-teal-700">3 GB</p>
+                <p class="text-lg font-medium text-blue-700">3 GB</p>
             </div>
         </div>
 
-        <!-- Instalación de la eSIM -->
-        <div class="bg-gray-100 p-4 rounded mb-4">
-            <h2 class="text-lg font-semibold text-teal-700">Instalación de la eSIM</h2>
-            <button class="text-teal-600 hover:underline mt-2 flex items-center">
-                <span>Ver instrucciones</span>
-                <span class="ml-2">→</span>
-            </button>
+        <!-- Métodos de pago -->
+        <div class="bg-blue-100 p-4 rounded mb-4">
+            <h2 class="text-lg font-semibold text-blue-700 mb-2">Métodos de pago</h2>
+            <p class="text-sm text-blue-700">Guarda y gestiona tus métodos de pago para agilizar las transacciones</p>
+            <button class="bg-blue-600 text-white px-4 py-2 rounded mt-2 w-full">Método de pago</button>
         </div>
 
         <!-- Notificación -->
@@ -105,22 +144,21 @@
             document.getElementById('data-used').textContent = `${dataUsed} MB`;
             document.getElementById('progress-value').textContent = `${remainingGB} GB`;
 
-            // Actualizar la barra de progreso
+            // Actualizar la barra de progreso con color dinámico
             const circle = document.querySelector('.progress-ring__circle-fg circle');
-            const radius = 42;
+            const radius = 58;
             const circumference = 2 * Math.PI * radius;
             const offset = circumference - (progress / 100) * circumference;
             circle.style.strokeDasharray = `${circumference}`;
             circle.style.strokeDashoffset = offset;
 
-            // Cambiar color del contador según los datos restantes
-            const counter = document.getElementById('progress-value');
+            // Cambiar color de la barra según los datos restantes
             if (dataRemaining > 2000) {
-                counter.style.color = '#22c55e'; // Verde para muchos datos
+                circle.style.stroke = '#22c55e'; // Verde para muchos datos
             } else if (dataRemaining > 1000) {
-                counter.style.color = '#facc15'; // Amarillo para datos medios
+                circle.style.stroke = '#facc15'; // Amarillo para datos medios
             } else {
-                counter.style.color = '#ef4444'; // Rojo para pocos datos
+                circle.style.stroke = '#ef4444'; // Rojo para pocos datos
             }
 
             // Mostrar notificación si quedan menos de 500 MB
