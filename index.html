@@ -19,6 +19,9 @@
             stroke: #22c55e;
             transition: stroke-dasharray 0.3s;
         }
+        .data-counter {
+            transition: color 0.5s;
+        }
     </style>
 </head>
 <body class="bg-gradient-to-b from-teal-600 to-teal-200 min-h-screen flex items-center justify-center p-4">
@@ -46,6 +49,31 @@
             <p>Las eSIM solo pueden instalarse una vez. Si eliminas la eSIM de tu dispositivo, no podrás instalarla de nuevo.</p>
         </div>
 
+        <!-- Contador de Datos Restantes -->
+        <div class="bg-gray-100 p-4 rounded mb-4 text-center">
+            <h2 class="text-lg font-semibold text-teal-700 mb-2">DATOS RESTANTES</h2>
+            <div class="relative w-24 h-24 mx-auto mb-4">
+                <svg class="progress-ring__circle-bg" width="96" height="96">
+                    <circle cx="48" cy="48" r="42" stroke-width="8"/>
+                </svg>
+                <svg class="progress-ring__circle-fg absolute top-0 left-0" width="96" height="96">
+                    <circle cx="48" cy="48" r="42" stroke-width="8"/>
+                </svg>
+                <span id="progress-value" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-lg font-bold data-counter">3.00 GB</span>
+            </div>
+        </div>
+
+        <!-- Detalles de Consumo -->
+        <div class="bg-white p-4 rounded shadow-inner mb-4">
+            <h2 class="text-lg font-semibold text-teal-700 mb-2">CONSUMO</h2>
+            <div class="text-center">
+                <p class="text-gray-600">DATOS USADOS</p>
+                <p id="data-used" class="text-lg font-medium text-teal-700">0 MB</p>
+                <p class="text-gray-600">DATOS TOTALES</p>
+                <p class="text-lg font-medium text-teal-700">3 GB</p>
+            </div>
+        </div>
+
         <!-- Instalación de la eSIM -->
         <div class="bg-gray-100 p-4 rounded mb-4">
             <h2 class="text-lg font-semibold text-teal-700">Instalación de la eSIM</h2>
@@ -55,31 +83,8 @@
             </button>
         </div>
 
-        <!-- Consumo -->
-        <div class="bg-white p-4 rounded shadow-inner">
-            <h2 class="text-lg font-semibold text-teal-700 mb-2">CONSUMO</h2>
-            <div class="flex items-center justify-between mb-2">
-                <span class="text-gray-600">DATOS</span>
-                <div class="relative w-20 h-20">
-                    <svg class="progress-ring__circle-bg" width="80" height="80">
-                        <circle cx="40" cy="40" r="35" stroke-width="6"/>
-                    </svg>
-                    <svg class="progress-ring__circle-fg absolute top-0 left-0" width="80" height="80">
-                        <circle cx="40" cy="40" r="35" stroke-width="6"/>
-                    </svg>
-                    <span id="progress-value" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-teal-700 font-bold">2.02 GB</span>
-                </div>
-            </div>
-            <div class="text-center">
-                <p class="text-gray-600">DATOS USADOS</p>
-                <p id="data-used" class="text-lg font-medium text-teal-700">1000 MB</p>
-                <p class="text-gray-600">DATOS TOTALES</p>
-                <p class="text-lg font-medium text-teal-700">3 GB</p>
-            </div>
-        </div>
-
         <!-- Notificación -->
-        <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-2 mt-4 rounded flex justify-between items-center">
+        <div id="low-data-notification" class="bg-red-100 border-l-4 border-red-500 text-red-700 p-2 rounded flex justify-between items-center hidden">
             <span>NOTIFICACIÓN DE POCOS DATOS RESTANTES</span>
             <button class="text-red-700 hover:underline">P_IR</button>
         </div>
@@ -87,29 +92,40 @@
 
     <script>
         // Simulación de consumo
-        let dataUsed = 1000; // En MB
+        let dataRemaining = 3000; // En MB, empieza con el total
         const totalData = 3000; // En MB
         const intervalTime = 5000; // Actualizar cada 5 segundos
 
         function updateProgress() {
-            dataUsed = Math.min(dataUsed + 50, totalData); // Incrementa 50 MB por actualización
-            const dataRemaining = totalData - dataUsed;
-            const progress = (dataUsed / totalData) * 100;
-            const progressGB = (dataUsed / 1000).toFixed(2);
+            dataRemaining = Math.max(dataRemaining - 50, 0); // Reducir 50 MB por actualización
+            const dataUsed = totalData - dataRemaining;
+            const progress = (dataRemaining / totalData) * 100;
+            const remainingGB = (dataRemaining / 1000).toFixed(2);
 
             document.getElementById('data-used').textContent = `${dataUsed} MB`;
-            document.getElementById('progress-value').textContent = `${progressGB} GB`;
+            document.getElementById('progress-value').textContent = `${remainingGB} GB`;
 
             // Actualizar la barra de progreso
             const circle = document.querySelector('.progress-ring__circle-fg circle');
-            const radius = 35;
+            const radius = 42;
             const circumference = 2 * Math.PI * radius;
             const offset = circumference - (progress / 100) * circumference;
             circle.style.strokeDasharray = `${circumference}`;
             circle.style.strokeDashoffset = offset;
 
-            if (dataRemaining < 500) { // Menos de 500 MB restantes
-                document.querySelector('.bg-red-100').classList.remove('hidden');
+            // Cambiar color del contador según los datos restantes
+            const counter = document.getElementById('progress-value');
+            if (dataRemaining > 2000) {
+                counter.style.color = '#22c55e'; // Verde para muchos datos
+            } else if (dataRemaining > 1000) {
+                counter.style.color = '#facc15'; // Amarillo para datos medios
+            } else {
+                counter.style.color = '#ef4444'; // Rojo para pocos datos
+            }
+
+            // Mostrar notificación si quedan menos de 500 MB
+            if (dataRemaining < 500) {
+                document.getElementById('low-data-notification').classList.remove('hidden');
             }
         }
 
