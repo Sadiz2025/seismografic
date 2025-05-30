@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sismógrafo Web</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        canvas { border: 1px solid black; }
+        #intensityIndicator { transition: background-color 0.3s; }
+    </style>
+</head>
+<body class="bg-gray-100 flex flex-col items-center justify-center min-h-screen p-4">
+    <h1 class="text-2xl font-bold mb-4">Sismógrafo Web</h1>
+    <p id="status" class="mb-2">Esperando permiso...</p>
+    <button id="requestPermission" class="bg-blue-500 text-white px-4 py-2 rounded mb-4">Solicitar Permiso</button>
+    <div id="intensityIndicator" class="w-full max-w-md p-4 rounded text-center text-white">
+        Intensidad: <span id="intensity">N/A</span>
+    </div>
+    <p id="description" class="text-center mb-4">Descripción: N/A</p>
+    <p id="acceleration" class="mb-4">Aceleración: 0 m/s²</p>
+    <canvas id="seismograph" width="600" height="200" class="bg-white"></canvas>
+
+    <script>
+        const canvas = document.getElementById('seismograph');
+        const ctx = canvas.getContext('2d');
+        const intensityIndicator = document.getElementById('intensityIndicator');
+        const intensityText = document.getElementById('intensity');
+        const descriptionText = document.getElementById('description');
+        const accelerationText = document.getElementById('acceleration');
+        const statusText = document.getElementById('status');
+        const requestButton = document.getElementById('requestPermission');
+
+        let dataPoints = [];
+        let lastX = 0;
+
+        const mercalliScale = [
+            { intensity: 'I', min: 0, max: 0.017, color: '#00FF00', description: 'No sentido' },
+            { intensity: 'II-III', min: 0.017, max: 0.14, color: '#ADFF2F', description: 'Ligero, sentido por pocos' },
+            { intensity: 'IV-V', min: 0.14, max: 0.39, color: '#FFFF00', description: 'Moderado, objetos ligeros se mueven' },
+            { intensity: 'VI-VII', min: 0.39, max: 1.8, color: '#FFA500', description: 'Fuerte, daños leves en edificios' },
+            { intensity: 'VIII-IX', min: 1.8, max: 3.4, color: '#FF4500', description: 'Muy fuerte, daños considerables' },
+            { intensity: 'X+', min: 3.4, max: Infinity, color: '#FF0000', description: 'Extremo, destrucción total' }
+        ];
+
+        requestButton.addEventListener('click', async () => {
+            if (typeof DeviceMotionEvent.requestPermission === 'function') {
+                try {
+                    const permission = await DeviceMotionEvent.requestPermission();
+                    if (permission === 'granted') {
+                        statusText.textContent = 'Permiso concedido. Mueve el dispositivo.';
+                        requestButton.classList.add('hidden');
+                        window.addEventListener('devicemotion', handleMotion);
+                    } else {
+                        statusText.textContent = 'Permiso denegado.';
+                    }
+                } catch (error) {
+                    statusText.textContent = 'Error al solicitar permiso: ' + error.message;
+                }
+            } else {
+                statusText.textContent = 'Permiso no requerido. Mueve el dispositivo.';
+                requestButton.classList.add('hidden');
+                window.addEventListener('devicemotion', handleMotion);
+            }
+        });
+
+        function handleMotion(event) {
+            const acc = event.accelerationIncludingGravity;
+            if (acc && acc.x !== null && acc.y !== null && acc.z !== null) {
+                const magnitude = Math.sqrt(acc.x ** 2 + acc.y ** 2 + acc.z ** 2);
+                accelerationText.textContent = `Aceleración: ${magnitude.toFixed(2)} m/s²`;
+
+                const level = mercalliScale.find(scale => magnitude >= scale.min && magnitude < scale.max);
+                intensityText.textContent = level.intensity;
+                descriptionText.textContent = `Descripción: ${level.description}`;
+                intensityIndicator.style.backgroundColor = level.color;
+
+                dataPoints.push(magnitude);
+                if (dataPoints.length > canvas.width / 2) {
+                    dataPoints.shift();
+                }
+                drawSeismograph();
+            }
+        }
+
+        function drawSeismograph() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.beginPath();
+            ctx.strokeStyle = 'black';
+            ctx.lineWidth = 2;
+
+            const maxAcc = 10;
+            dataPoints.forEach((value, index) => {
+                const x = canvas.width - dataPoints.length * 2 + index * 2;
+                const y = canvas.height / 2 - (value / maxAcc) * (canvas.height / 2);
+                if (index === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            });
+            ctx.stroke();
+        }
+
+        ctx.beginPath();
+        ctx.moveTo(0, canvas.height / 2);
+        ctx.lineTo(canvas.width, canvas.height / 2);
+        ctx.strokeStyle = 'gray';
+        ctx.stroke();
+    </script>
+</body>
+</html>
